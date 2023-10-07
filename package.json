@@ -1,12 +1,4 @@
 {
-  "manifest_version": 3,
-  "name": "Chrome-YT-Transcript-Clipboard",
-  "description": "Chrome extension to put the transcript of the current youtube link into the clipboard",
-  "version": "1.0",
-  "action": {
-    "default_popup": "hello.html",
-    "default_icon": "hello.png"
-  },
   "devDependencies": {
     "chrome-types": "^0.1.231"
   }
