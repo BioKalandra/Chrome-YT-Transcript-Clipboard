@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Chrome-YT-Transcript-Clipboard",
+    "name": "YT-Transcript",
     "description": "Chrome extension to put the transcript of the current youtube link into the clipboard",
     "version": "1.0",
     "action": {
