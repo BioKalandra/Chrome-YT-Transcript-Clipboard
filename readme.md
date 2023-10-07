@@ -1,0 +1,3 @@
+- copy transcript of YT
+  - into clipboard
+  - into google keeps
