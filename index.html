@@ -2,7 +2,7 @@
 <head>
     <title>Oauth</title>
     <style>
-        button {
+        button, .button {
             padding: 10px;
             background-color: #3C79F8;
             display: inline-block;
@@ -11,6 +11,8 @@
     <script type="text/javascript" src="src/oauth.js"></script>
 </head>
 <body>
+<div class="button" id="authButton">AUTHENTICATE</div>
+<div id="token">token: <span id="tokenId"></span></div>
 <button>Contacts</button>
 <div id="photoDiv"></div>
 </body>
