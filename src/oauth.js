@@ -27,7 +27,7 @@ window.onload = function () {
                     Authorization: 'Bearer ' + token, 'Content-Type': 'application/json'
                 }, 'contentType': 'json'
             };
-            fetch('https://people.googleapis.com/v1/contactGroups/all?maxMembers=20&key=AIzaSyDpsHaMb6LPfIov9yRfN9dzmmrhUkoERes', init)
+            fetch('https://people.googleapis.com/v1/contactGroups/all?maxMembers=20&key=', init)
                 .then((response) => response.json())
                 .then(function (data) {
                     console.log(data)
@@ -42,13 +42,13 @@ window.onload = function () {
                     Authorization: 'Bearer ' + token, 'Content-Type': 'application/json'
                 }, 'contentType': 'json'
             };
-            fetch('https://people.googleapis.com/v1/contactGroups/all?maxMembers=1000&key=AIzaSyDpsHaMb6LPfIov9yRfN9dzmmrhUkoERes', init)
+            fetch('https://people.googleapis.com/v1/contactGroups/all?maxMembers=1000&key=', init)
                 .then((response) => response.json())
                 .then(function (data) {
                     let photoDiv = document.querySelector('#photoDiv');
                     let returnedContacts = data.memberResourceNames;
                     for (let i = 0; i < returnedContacts.length; i++) {
-                        fetch('https://people.googleapis.com/v1/' + returnedContacts[i] + '?personFields=photos&key=AIzaSyDpsHaMb6LPfIov9yRfN9dzmmrhUkoERes', init)
+                        fetch('https://people.googleapis.com/v1/' + returnedContacts[i] + '?personFields=photos&key=', init)
                             .then((response) => response.json())
                             .then(function (data) {
                                 let profileImg = document.createElement('img');
