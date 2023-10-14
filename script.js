@@ -1,5 +1,25 @@
 const SNACKBAR_ID = 'snackbar';
 const CONTENT_ID = 'content';
+const TIMEOUT = 150;
+const MSG_TRANSCRIPT_NOT_FOUND = 'transcript not found'
+const MSG_TRANSCRIPT_FOUND = 'transcript copied to clipboard'
+const RELATIVE_X_PATH_TRANSCRIPT_BUTTON = '//*[@id="primary-button"]/ytd-button-renderer/yt-button-shape/button/yt-touch-feedback-shape/div/div[2]'
+
+let startTime;
+
+const transcriptBox = document.createElement('button');
+transcriptBox.innerHTML = 'transcribe';
+transcriptBox.className = 'transcribeBox';
+
+const buttonContainer = document.createElement('div');
+buttonContainer.className = 'buttonContainer';
+//todo change position of button, right of title
+buttonContainer.appendChild(transcriptBox);
+buttonContainer.style.position = 'fixed';
+buttonContainer.style.zIndex = "999";
+
+const videoContainer = document.getElementById('movie_player');
+videoContainer.appendChild(buttonContainer)
 
 /**
  * Creates the snackbar initially
@@ -8,7 +28,7 @@ function createSnackbar() {
     setTimeout(() => {
         const snackBar = document.createElement('div')
         snackBar.id = SNACKBAR_ID
-        //snackBar.innerHTML = 'init1234'
+
         const videoContainer = document.getElementById(CONTENT_ID);
 
         if (!videoContainer) {
@@ -17,8 +37,13 @@ function createSnackbar() {
             videoContainer.appendChild(snackBar)
         }
 
-    }, 1500)
+    }, 2500)
 }
+
+/**
+ * create snackbar
+ */
+createSnackbar()
 
 /**
  * extracts the transcription, if the transcript window is already opened
@@ -29,7 +54,7 @@ function getTranscription() {
     );
 
     if (transcriptDivs.length === 0) {
-        sendMessageToSnackbar("transcript not found", false)
+        return false
     }
 
     let transcript = [];
@@ -52,9 +77,10 @@ function getTranscription() {
  */
 function sendMessageToSnackbar(message, success) {
     // Get the snackbar DIV
-    var snackbarItem = document.getElementById(SNACKBAR_ID);
+    const snackbarItem = document.getElementById(SNACKBAR_ID);
 
-    snackbarItem.innerHTML = message
+    snackbarItem.innerHTML = `${message} - ${getCurrentTime()}`
+    snackbarItem.innerHTML = `${message}`
     success ? snackbarItem.style.color = 'lightgreen' : snackbarItem.style.color = 'red'
 
     // Add the "show" class to DIV
@@ -66,46 +92,78 @@ function sendMessageToSnackbar(message, success) {
     }, 3000);
 }
 
-createSnackbar()
-
-const relativeXpathTranscribeButton = '//*[@id="primary-button"]/ytd-button-renderer/yt-button-shape/button/yt-touch-feedback-shape/div/div[2]'
-
-function getElementByXpath(path) {
-    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+/**
+ * return the time required in seconds
+ * @returns {number}
+ */
+function getCurrentTime() {
+    return (Date.now() - startTime) / 1000
 }
 
-const transcriptBox = document.createElement('button');
-transcriptBox.innerHTML = 'transcribe';
-transcriptBox.className = 'transcribeBox';
+/**
+ * waits the amount of ms
+ * @param ms
+ * @returns {Promise<unknown>}
+ */
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-transcriptBox.addEventListener('click', () => {
-    //todo maybe change to promises?
-    setTimeout(() => {
-        let elementByXpath = getElementByXpath(relativeXpathTranscribeButton)
-        if (elementByXpath) {
-            elementByXpath.click()
-            setTimeout(() => {
-                let transcription = getTranscription();
-                navigator.clipboard.writeText(transcription).then(function () {
-                    sendMessageToSnackbar('success :)', 'green')
-                }, function (err) {
-                    sendMessageToSnackbar('couldn\'t read transcript', false)
-                    console.error(err)
-                });
-            }, 1500) //todo reduce time? the first
-        } else {
-            sendMessageToSnackbar('transcript not found', false)
-            console.error('transcript not found')
-        }
-    }, 1500)  //todo reduce time? the first
+/**
+ * find element in Dom, call multiple times
+ * @param xpath
+ * @param maxAttempts
+ * @param currentAttempt
+ * @param successMessage
+ * @param errorMessage
+ * @returns {Promise<void>}
+ */
+async function findElementAndClick(xpath, maxAttempts, currentAttempt, successMessage, errorMessage = 0) {
+    if (currentAttempt >= maxAttempts) {
+        sendMessageToSnackbar(errorMessage, false);
+        return;
+    }
+
+    const elementByXpath = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    if (elementByXpath) {
+        elementByXpath.click()
+        await findTranscript(maxAttempts, 0, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND)
+    } else {
+        // Element not found, retry after a delay
+        await delay(TIMEOUT);
+        await findElementAndClick(xpath, maxAttempts, currentAttempt + 1, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND);
+    }
+}
+
+/**
+ * Function that can be called multiple times to retry getting the transcript
+ * @param maxAttempts
+ * @param currentAttempt
+ * @param successMessage
+ * @param errorMessage
+ * @returns {Promise<boolean>}
+ */
+async function findTranscript(maxAttempts, currentAttempt, successMessage, errorMessage = 0) {
+    if (currentAttempt >= maxAttempts) {
+        sendMessageToSnackbar(errorMessage, false);
+        return false;
+    }
+
+    const transcription = getTranscription();
+    if (transcription) {
+        await navigator.clipboard.writeText(transcription);
+        sendMessageToSnackbar(successMessage, true);
+    } else {
+        // Element not found, retry after a delay
+        await delay(TIMEOUT);
+        await findTranscript(maxAttempts, currentAttempt + 1, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND);
+    }
+}
+
+/**
+ * Entrypoint, a click on the button
+ */
+transcriptBox.addEventListener('click',  () => {
+    startTime = Date.now()
+    findElementAndClick(RELATIVE_X_PATH_TRANSCRIPT_BUTTON, 50, 0, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND); // Retry up to 5 times
 });
-
-const buttonContainer = document.createElement('div');
-buttonContainer.className = 'buttonContainer';
-//todo change position of button, right of title
-buttonContainer.appendChild(transcriptBox);
-buttonContainer.style.position = 'fixed';
-buttonContainer.style.zIndex = "999";
-
-const videoContainer = document.getElementById('movie_player');
-videoContainer.appendChild(buttonContainer)
