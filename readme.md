@@ -4,12 +4,12 @@
 
 ## Todo list
 - [X] Initial program
-- [ ] OAuth implementation
+- [X] OAuth implementation
 - [ ] YouTube Call
 
 ## Backlog
 
 - copy transcript of YT
     - into clipboard
-    - into google keeps
-- compare my login with the login of better trading app
+    - <s>into google keeps (requires oauth again)</s>
+- compare my login with the login of better trading app for follow up
