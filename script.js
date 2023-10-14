@@ -10,11 +10,13 @@ function createSnackbar() {
         snackBar.id = SNACKBAR_ID
         //snackBar.innerHTML = 'init1234'
         const videoContainer = document.getElementById(CONTENT_ID);
+
         if (!videoContainer) {
             console.error('container not found :(')
         } else {
             videoContainer.appendChild(snackBar)
         }
+
     }, 1500)
 }
 
@@ -31,12 +33,15 @@ function getTranscription() {
     }
 
     let transcript = [];
+
     for (let i = 0; i < transcriptDivs.length; i++) {
         transcript.push(transcriptDivs[i].innerHTML.trim());
     }
+
     for (let j = 10; j < transcript.length; j += 10) {
         transcript.splice(j, 0, '<br><br>');
     }
+
     return transcript.join('. ');
 }
 
@@ -79,13 +84,17 @@ transcriptBox.addEventListener('click', () => {
         if (elementByXpath) {
             elementByXpath.click()
             setTimeout(() => {
-                console.error(getTranscription())
+                let transcription = getTranscription();
+                navigator.clipboard.writeText(transcription).then(function () {
+                    sendMessageToSnackbar('success :)', 'green')
+                }, function (err) {
+                    sendMessageToSnackbar('couldn\'t read transcript', false)
+                    console.error(err)
+                });
             }, 1500)
-
-
-            //sendMessageToSnackbar('success :)', 'green')
         } else {
-            sendMessageToSnackbar('fail', false)
+            sendMessageToSnackbar('transcript not found', false)
+            console.error('transcript not found')
         }
     }, 1500)
 });
