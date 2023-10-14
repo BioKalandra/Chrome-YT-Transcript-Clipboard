@@ -79,6 +79,7 @@ transcriptBox.innerHTML = 'transcribe';
 transcriptBox.className = 'transcribeBox';
 
 transcriptBox.addEventListener('click', () => {
+    //todo maybe change to promises?
     setTimeout(() => {
         let elementByXpath = getElementByXpath(relativeXpathTranscribeButton)
         if (elementByXpath) {
@@ -91,16 +92,17 @@ transcriptBox.addEventListener('click', () => {
                     sendMessageToSnackbar('couldn\'t read transcript', false)
                     console.error(err)
                 });
-            }, 1500)
+            }, 1500) //todo reduce time? the first
         } else {
             sendMessageToSnackbar('transcript not found', false)
             console.error('transcript not found')
         }
-    }, 1500)
+    }, 1500)  //todo reduce time? the first
 });
 
 const buttonContainer = document.createElement('div');
 buttonContainer.className = 'buttonContainer';
+//todo change position of button, right of title
 buttonContainer.appendChild(transcriptBox);
 buttonContainer.style.position = 'fixed';
 buttonContainer.style.zIndex = "999";

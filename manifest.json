@@ -10,9 +10,15 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiLqrBbj+fEqZIpM1GSZL4BBM5sSlse2kKDdGw/z2xxQtDEKzIh++1n3Qzckg8zotPfLOwsNop7Qp+1hNwFNChp9xhtI6x4SSxTcyCXOMuptmG5g8HgFGiicqDzLKrqgKkEhpsr7weIEznOtsKQjy8QN9AvlOJdytswHFMp6a7xNuhPMLbqeXUiOzxbAx6YF2y724PzTdwUUJsQXZ4TmoKm8y8xkcP88axnHK8eyBpL8xNHGcN+Y3KSNch6E4+6iZMLNnH1/YxqQD2ybQ0O6/Wsgem67yyWbbnYFVH0bygGqJ3u32/LvFdJzD4JjI/fBmijVAiEAeWybcgTiI7aekXQIDAQAB",
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*"],
-      "js": ["script.js"],
-      "css": ["style.css"]
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "script.js"
+      ],
+      "css": [
+        "style.css"
+      ]
     }
   ]
 }
