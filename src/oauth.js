@@ -1,3 +1,5 @@
+/* Google People API has to be enabled https://console.cloud.google.com/apis/library/people.googleapis.com for oauth, alternatively via api key */
+
 window.onload = function () {
 
     document.querySelector('#token').addEventListener('click', function () {
@@ -27,7 +29,7 @@ window.onload = function () {
                     Authorization: 'Bearer ' + token, 'Content-Type': 'application/json'
                 }, 'contentType': 'json'
             };
-            fetch('https://people.googleapis.com/v1/contactGroups/all?maxMembers=20&key=', init)
+            fetch('https://people.googleapis.com/v1/contactGroups/all?maxMembers=20', init)
                 .then((response) => response.json())
                 .then(function (data) {
                     console.log(data)
@@ -42,19 +44,23 @@ window.onload = function () {
                     Authorization: 'Bearer ' + token, 'Content-Type': 'application/json'
                 }, 'contentType': 'json'
             };
-            fetch('https://people.googleapis.com/v1/contactGroups/all?maxMembers=1000&key=', init)
+            fetch('https://people.googleapis.com/v1/contactGroups/all?maxMembers=10&key=', init)
                 .then((response) => response.json())
                 .then(function (data) {
                     let photoDiv = document.querySelector('#photoDiv');
                     let returnedContacts = data.memberResourceNames;
                     for (let i = 0; i < returnedContacts.length; i++) {
-                        fetch('https://people.googleapis.com/v1/' + returnedContacts[i] + '?personFields=photos&key=', init)
+                        fetch('https://people.googleapis.com/v1/' + returnedContacts[i] + '?personFields=photos', init)
                             .then((response) => response.json())
                             .then(function (data) {
                                 let profileImg = document.createElement('img');
                                 profileImg.src = data.photos[0].url;
                                 photoDiv.appendChild(profileImg);
-                            });
+                            })
+                            .catch(error => {
+                                console.error(error);
+                            })
+                        ;
                     };
                 });
         });
