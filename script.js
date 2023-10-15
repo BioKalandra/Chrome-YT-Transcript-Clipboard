@@ -180,5 +180,4 @@ setTimeout(() => {
     findElementByXpath(RELATIVE_X_PATH_TITLE, MAX_TRIES_ASYNC, 0, 'title found', 'title not found').then((titleElement) => {
         titleElement.append(transcriptBox)
     }).catch(e => console.error(`something went wrong, title not found and therefore the button couldn't have been placed`, e))
-}, 1000);
-
+}, 2000);
