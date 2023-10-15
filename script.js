@@ -5,8 +5,7 @@ const MAX_TRIES_ASYNC = 50;
 const MSG_TRANSCRIPT_NOT_FOUND = 'transcript not found'
 const MSG_TRANSCRIPT_FOUND = 'transcript copied to clipboard'
 const RELATIVE_X_PATH_TRANSCRIPT_BUTTON = '//*[@id="primary-button"]/ytd-button-renderer/yt-button-shape/button/yt-touch-feedback-shape/div/div[2]'
-const RELATIVE_X_PATH_BURGER_SHOW_TRANSCRIPT_BUTTON = '//*[@id="items"]/ytd-menu-service-item-renderer[5]/tp-yt-paper-item/yt-formatted-string'
-
+const RELATIVE_X_PATH_TITLE = '//*[@id="title"]/h1/yt-formatted-string'
 let startTime;
 
 /**
@@ -37,9 +36,7 @@ createSnackbar()
  * extracts the transcription, if the transcript window is already opened
  */
 function getTranscription() {
-    const transcriptDivs = document.getElementsByClassName(
-        'segment-text style-scope ytd-transcript-segment-renderer'
-    );
+    const transcriptDivs = document.getElementsByClassName('segment-text style-scope ytd-transcript-segment-renderer');
 
     if (transcriptDivs.length === 0) {
         return false
@@ -106,36 +103,36 @@ function delay(ms) {
  * @param errorMessage
  * @returns {Promise<Awaited<Node>>}
  */
-async function findElementAndClick(xpath, maxAttempts, currentAttempt, successMessage, errorMessage ) {
-    await findElement(xpath, maxAttempts, currentAttempt, successMessage, errorMessage, true)
+async function findElementAndClick(xpath, maxAttempts, currentAttempt, successMessage, errorMessage) {
+    await findElementByXpath(xpath, maxAttempts, currentAttempt, successMessage, errorMessage, true)
 }
 
 /**
- *
  * @param xpath
  * @param maxAttempts
  * @param currentAttempt
  * @param successMessage
  * @param errorMessage
  * @param click decides if the found element should be clicked
- * @returns {Promise<Awaited<Node>>}
+ * @returns {Promise<Node>}
  */
-async function findElement(xpath, maxAttempts, currentAttempt, successMessage, errorMessage, click = false) {
+async function findElementByXpath(xpath, maxAttempts, currentAttempt, successMessage, errorMessage, click = false) {
     if (currentAttempt >= maxAttempts) {
         sendMessageToSnackbar(errorMessage, false);
         return Promise.reject('max attempts reached')
     }
 
     const elementByXpath = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+
     if (elementByXpath) {
-        if(click) {
+        if (click) {
             elementByXpath.click()
         }
-        return Promise.resolve(elementByXpath)
+        return elementByXpath
     } else {
-        // Element not found, retry after a delay
+        // Element not found, retry after a delay, recursive call
         await delay(TIMEOUT);
-        await findElementAndClick(xpath, maxAttempts, currentAttempt + 1, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND);
+        await findElementByXpath(xpath, maxAttempts, currentAttempt + 1, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND);
     }
 }
 
@@ -147,7 +144,7 @@ async function findElement(xpath, maxAttempts, currentAttempt, successMessage, e
  * @param errorMessage
  * @returns {Promise<boolean>}
  */
-async function findTranscript(maxAttempts, currentAttempt, successMessage, errorMessage = 0) {
+async function findTranscript(maxAttempts, currentAttempt, successMessage, errorMessage) {
     if (currentAttempt >= maxAttempts) {
         sendMessageToSnackbar(errorMessage, false);
         return false;
@@ -164,16 +161,24 @@ async function findTranscript(maxAttempts, currentAttempt, successMessage, error
     }
 }
 
+/* The element to trigger the functionality */
+const transcriptBox = document.createElement('button');
+transcriptBox.innerHTML = 'transcribe';
+transcriptBox.className = 'transcribeBox';
+
+transcriptBox.addEventListener('click', async () => {
+    startTime = Date.now()
+    await findElementAndClick(RELATIVE_X_PATH_TRANSCRIPT_BUTTON, MAX_TRIES_ASYNC, 0, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND); // Retry up to 5 times
+    await findTranscript(MAX_TRIES_ASYNC, 0, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND)
+});
+
 /**
  * Entrypoint, a click on the button
+ * requires a timeout, because it seems like the dom is changing. without the timeout we most likely get an element that gets destroyed once more hence it doesn't make sense to append something to it
  */
-//todo fix me or find another solution
-findElement(RELATIVE_X_PATH_BURGER_SHOW_TRANSCRIPT_BUTTON, MAX_TRIES_ASYNC, 0, 'init','fail').then((data) => {
-    data.removeEventListener('click', () => {})
-    data.addEventListener('click',  async () => {
-        startTime = Date.now()
-        await findElementAndClick(RELATIVE_X_PATH_TRANSCRIPT_BUTTON, MAX_TRIES_ASYNC, 0, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND); // Retry up to 5 times
-        await findTranscript(MAX_TRIES_ASYNC, 0, MSG_TRANSCRIPT_FOUND, MSG_TRANSCRIPT_NOT_FOUND)
-    })
-})
+setTimeout(() => {
+    findElementByXpath(RELATIVE_X_PATH_TITLE, MAX_TRIES_ASYNC, 0, 'title found', 'title not found').then((titleElement) => {
+        titleElement.append(transcriptBox)
+    }).catch(e => console.error(`something went wrong, title not found and therefore the button couldn't have been placed`, e))
+}, 1000);
 
