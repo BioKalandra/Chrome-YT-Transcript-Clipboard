@@ -6,6 +6,8 @@ const MSG_TRANSCRIPT_NOT_FOUND = 'transcript not found'
 const MSG_TRANSCRIPT_FOUND = 'transcript copied to clipboard'
 const RELATIVE_X_PATH_TRANSCRIPT_BUTTON = '//*[@id="primary-button"]/ytd-button-renderer/yt-button-shape/button/yt-touch-feedback-shape/div/div[2]'
 const RELATIVE_X_PATH_TITLE = '//*[@id="title"]/h1/yt-formatted-string'
+/* the delay in ms to wait for YT to load */
+const START_DELAY = 2500
 let startTime;
 
 /**
@@ -24,13 +26,8 @@ function createSnackbar() {
             videoContainer.appendChild(snackBar)
         }
 
-    }, 2500)
+    }, START_DELAY)
 }
-
-/**
- * create snackbar
- */
-createSnackbar()
 
 /**
  * extracts the transcription, if the transcript window is already opened
@@ -173,6 +170,11 @@ transcriptBox.addEventListener('click', async () => {
 });
 
 /**
+ * create snackbar
+ */
+createSnackbar()
+
+/**
  * Entrypoint, a click on the button
  * requires a timeout, because it seems like the dom is changing. without the timeout we most likely get an element that gets destroyed once more hence it doesn't make sense to append something to it
  */
@@ -180,4 +182,4 @@ setTimeout(() => {
     findElementByXpath(RELATIVE_X_PATH_TITLE, MAX_TRIES_ASYNC, 0, 'title found', 'title not found').then((titleElement) => {
         titleElement.append(transcriptBox)
     }).catch(e => console.error(`something went wrong, title not found and therefore the button couldn't have been placed`, e))
-}, 2000);
+}, START_DELAY);
